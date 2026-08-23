@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+server/.env
+
+# Build output
+dist/
+build/
+.next/
+
+# SQLite data
+server/data/
+*.sqlite
+*.sqlite3
+
+# Uploaded / temporary audio
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Editor folders
+.vscode/
+.idea/
+.DS_Store
