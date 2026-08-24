@@ -1,87 +1,103 @@
-import Database from "better-sqlite3";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import { createClient } from "@supabase/supabase-js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, "..", "..", "data");
-const DB_PATH = path.join(DATA_DIR, "meetings.sqlite3");
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+export const supabase =
+  supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
-const db = new Database(DB_PATH);
-db.pragma("journal_mode = WAL");
-
-export function initDatabase() {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS meetings (
-      id            TEXT PRIMARY KEY,
-      filename      TEXT NOT NULL,
-      status        TEXT NOT NULL DEFAULT 'uploaded',
-      error         TEXT,
-      created_at    TEXT NOT NULL,
-      updated_at    TEXT NOT NULL,
-      transcript    TEXT,
-      summary       TEXT,
-      key_points    TEXT,
-      decisions     TEXT,
-      action_items  TEXT,
-      open_questions TEXT
-    );
-  `);
-}
-
-// status lifecycle: uploaded -> transcribing -> summarizing -> completed
-//                                                            -> failed
-
-export function createMeeting({ id, filename }) {
-  const now = new Date().toISOString();
-  db.prepare(
-    `INSERT INTO meetings (id, filename, status, created_at, updated_at)
-     VALUES (?, ?, 'uploaded', ?, ?)`
-  ).run(id, filename, now, now);
-  return getMeeting(id);
-}
-
-export function updateMeetingStatus(id, status, extra = {}) {
-  const fields = ["status = ?", "updated_at = ?"];
-  const values = [status, new Date().toISOString()];
-
-  for (const [key, value] of Object.entries(extra)) {
-    fields.push(`${key} = ?`);
-    values.push(
-      typeof value === "object" && value !== null ? JSON.stringify(value) : value
+export async function initDatabase() {
+  if (!supabase) {
+    console.warn(
+      "⚠️ Warning: SUPABASE_URL and SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY are not set in environment variables."
     );
   }
+}
 
-  values.push(id);
-  db.prepare(`UPDATE meetings SET ${fields.join(", ")} WHERE id = ?`).run(...values);
-  return getMeeting(id);
+export async function createMeeting({ id, filename }) {
+  if (!supabase) throw new Error("Supabase client is not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY in .env");
+  const { data, error } = await supabase
+    .from("meetings")
+    .insert([{ id, filename, status: "uploaded" }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return parseJsonFields(data);
+}
+
+export async function updateMeetingStatus(id, status, extra = {}) {
+  if (!supabase) throw new Error("Supabase client is not configured.");
+  const payload = {
+    status,
+    updated_at: new Date().toISOString(),
+    ...extra,
+  };
+
+  const { data, error } = await supabase
+    .from("meetings")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Supabase update error:", error);
+    throw error;
+  }
+  return parseJsonFields(data);
+}
+
+export async function getMeeting(id) {
+  if (!supabase) throw new Error("Supabase client is not configured.");
+  const { data, error } = await supabase
+    .from("meetings")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) return null;
+  return parseJsonFields(data);
+}
+
+export async function listMeetings() {
+  if (!supabase) throw new Error("Supabase client is not configured.");
+  const { data, error } = await supabase
+    .from("meetings")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
+  return data.map(parseJsonFields);
 }
 
 function parseJsonFields(row) {
   if (!row) return row;
   return {
     ...row,
-    keyPoints: row.key_points ? JSON.parse(row.key_points) : [],
-    decisions: row.decisions ? JSON.parse(row.decisions) : [],
-    actionItems: row.action_items ? JSON.parse(row.action_items) : [],
-    openQuestions: row.open_questions ? JSON.parse(row.open_questions) : [],
+    keyPoints: Array.isArray(row.key_points)
+      ? row.key_points
+      : typeof row.key_points === "string"
+      ? JSON.parse(row.key_points || "[]")
+      : row.keyPoints || [],
+    decisions: Array.isArray(row.decisions)
+      ? row.decisions
+      : typeof row.decisions === "string"
+      ? JSON.parse(row.decisions || "[]")
+      : row.decisions || [],
+    actionItems: Array.isArray(row.action_items)
+      ? row.action_items
+      : typeof row.action_items === "string"
+      ? JSON.parse(row.action_items || "[]")
+      : row.actionItems || [],
+    openQuestions: Array.isArray(row.open_questions)
+      ? row.open_questions
+      : typeof row.open_questions === "string"
+      ? JSON.parse(row.open_questions || "[]")
+      : row.openQuestions || [],
   };
 }
 
-export function getMeeting(id) {
-  const row = db.prepare(`SELECT * FROM meetings WHERE id = ?`).get(id);
-  return parseJsonFields(row);
-}
+export default supabase;
 
-export function listMeetings() {
-  const rows = db
-    .prepare(`SELECT * FROM meetings ORDER BY created_at DESC`)
-    .all();
-  return rows.map(parseJsonFields);
-}
-
-export default db;
