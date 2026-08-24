@@ -1,0 +1,662 @@
+/* ---------------------------------------------------------------------
+   Design tokens
+   Palette: light grey canvas, white cards, single yellow/amber "tape"
+   accent — evokes a physical recorder/cassette rather than a generic
+   dark-mode SaaS dashboard. Layout is full-bleed and responsive.
+--------------------------------------------------------------------- */
+:root {
+  --bg: #f2f1ee;
+  --surface: #ffffff;
+  --surface-sunken: #ebeae6;
+  --border: #ded9d0;
+  --border-strong: #c9c3b7;
+  --text: #201f1c;
+  --text-muted: #7a756a;
+
+  --accent: #f2b705;
+  --accent-strong: #d99e00;
+  --accent-soft: #fdf1cc;
+  --accent-ink: #4a3a00;
+
+  --decision: #1f8a56;
+  --decision-soft: #e3f5ea;
+  --danger: #d1453b;
+  --danger-soft: #fbe9e7;
+
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-card: 0 1px 2px rgba(32, 31, 28, 0.04), 0 1px 1px rgba(32, 31, 28, 0.03);
+
+  --header-h: 68px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* ---------------------------------------------------------------------
+   Shell / header — full width, sticky top bar
+--------------------------------------------------------------------- */
+.app-shell {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 clamp(20px, 4vw, 56px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header__mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.app-header__led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.app-header__title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.app-header__subtitle {
+  margin: 1px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.app-main {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 56px) 80px;
+}
+
+/* ---------------------------------------------------------------------
+   Layout helpers
+--------------------------------------------------------------------- */
+.home-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(24px, 4vw, 48px);
+}
+
+@media (max-width: 860px) {
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.section-subheading {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+  align-items: start;
+}
+
+@media (max-width: 780px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.results-grid>.panel--wide {
+  grid-column: 1 / -1;
+}
+
+/* ---------------------------------------------------------------------
+   Upload
+--------------------------------------------------------------------- */
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.upload-drop {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: clamp(32px, 6vw, 52px) 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.upload-drop:hover,
+.upload-drop--active {
+  border-color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.upload-drop__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.upload-drop__title {
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+
+.upload-drop__filename {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--accent-ink);
+  word-break: break-all;
+}
+
+.upload-drop__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Buttons
+--------------------------------------------------------------------- */
+.btn {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+.btn--ghost {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-muted);
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.btn--ghost:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.back-link {
+  margin-bottom: 20px;
+}
+
+/* ---------------------------------------------------------------------
+   Meeting list
+--------------------------------------------------------------------- */
+.meeting-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meeting-list__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: var(--shadow-card);
+}
+
+.meeting-list__item:hover {
+  border-color: var(--border-strong);
+}
+
+.meeting-list__filename {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-pill {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+}
+
+.status-pill--completed {
+  color: var(--decision);
+  background: var(--decision-soft);
+}
+
+.status-pill--failed {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.status-pill--transcribing,
+.status-pill--summarizing {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+/* ---------------------------------------------------------------------
+   Tape deck — the page's signature element. Frames the upload/processing
+   flow like a cassette recorder: reels, a running waveform, and a status
+   readout, all in the yellow accent against white.
+--------------------------------------------------------------------- */
+.tape-deck {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.tape-deck__reels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 8px 0 20px;
+}
+
+.tape-reel {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tape-reel::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+}
+
+.tape-reel--spinning {
+  animation: spin 2.4s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Waveform — used both in the tape deck (live/processing) and as a
+   scrubber above the transcript once a meeting is complete.
+--------------------------------------------------------------------- */
+.waveform {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  height: 44px;
+  margin: 0 0 8px;
+}
+
+.waveform__bar {
+  width: 3px;
+  min-height: 4px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+
+.waveform__bar--active {
+  background: var(--accent);
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: scaleY(0.6);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.tape-deck__label {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.tape-deck__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.tape-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tape-step__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  margin-top: 4px;
+  flex-shrink: 0;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tape-step__text {
+  flex: 1;
+}
+
+.tape-step__label {
+  margin: 0 0 2px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tape-step__detail {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.tape-step--done .tape-step__dot {
+  background: var(--decision);
+}
+
+.tape-step--done .tape-step__label {
+  color: var(--text);
+}
+
+.tape-step--active .tape-step__dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.tape-step--active .tape-step__label {
+  color: var(--text);
+}
+
+.tape-step--active .tape-step__detail {
+  color: var(--accent-ink);
+}
+
+.tape-step--failed .tape-step__dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 4px var(--danger-soft);
+}
+
+.tape-step--failed .tape-step__label,
+.tape-step--failed .tape-step__detail {
+  color: var(--danger);
+}
+
+/* ---------------------------------------------------------------------
+   Result panels
+--------------------------------------------------------------------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: clamp(18px, 3vw, 24px) clamp(18px, 3vw, 24px) 22px;
+}
+
+.panel__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel__title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.panel__subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 18px 0 8px;
+}
+
+.panel__body {
+  margin: 0;
+  line-height: 1.65;
+  font-size: 15px;
+}
+
+.bullet-list {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.7;
+}
+
+.bullet-list--muted {
+  color: var(--text-muted);
+}
+
+.decision-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.decision-list__item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.decision-list__check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--decision-soft);
+  color: var(--decision);
+  font-weight: 600;
+  font-size: 11px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.action-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.action-table__row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.action-table__row:last-child {
+  border-bottom: none;
+}
+
+.action-table__row--head {
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.action-table__empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 520px) {
+  .action-table__row {
+    grid-template-columns: 1.4fr 1fr 1fr;
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+}
+
+.transcript {
+  max-height: 360px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
